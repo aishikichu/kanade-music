@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kanade 奏 — Hi-Res Lossless Downloader</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top Drive Quick-Bar -->
+    <header class="top-drive-bar">
+      <div class="brand">
+        <div class="brand-logo" title="Kanade (奏)">奏</div>
+        <div class="brand-text">
+          <span class="brand-name">Kanade <span class="brand-sub">奏</span></span>
+          <span class="brand-badge">Hi-Res Lossless Studio</span>
+        </div>
+      </div>
+
+      <div class="drive-quick-selector">
+        <div class="current-drive-pill" id="currentDriveDisplay" title="Click to open this folder in Windows Explorer">
+          <span class="drive-icon">💾</span>
+          <span class="drive-text" id="driveStatsText">Loading storage drives...</span>
+          <span class="drive-tag" id="driveFreeTag">-- GB Free</span>
+        </div>
+
+        <div class="quick-drives-list" id="quickDrivesList">
+          <!-- Populated by JS: [E: (2.7 TB)] [C: (643 GB)] -->
+        </div>
+
+        <button class="btn btn-secondary btn-sm" id="btnBrowseFolder" title="Choose any custom folder or drive">
+          📁 Browse...
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Header -->
+    <nav class="nav-bar">
+      <div class="nav-tabs">
+        <button class="nav-tab active" data-tab="search">
+          <span class="nav-icon">🔍</span> Search & Discover
+        </button>
+        <button class="nav-tab" data-tab="urls">
+          <span class="nav-icon">🔗</span> Direct URLs & Web
+        </button>
+        <button class="nav-tab" data-tab="queue">
+          <span class="nav-icon">⏳</span> Download Queue
+          <span class="badge" id="queueBadge" style="display:none;">0</span>
+        </button>
+        <button class="nav-tab" data-tab="library">
+          <span class="nav-icon">📂</span> Music Library
+        </button>
+        <button class="nav-tab" data-tab="settings">
+          <span class="nav-icon">⚙️</span> Storage & Settings
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-viewport">
+      
+      <!-- TAB 1: SEARCH & DISCOVER -->
+      <section class="tab-pane active" id="tab-search">
+        <div class="search-header-card">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Search by song name, artist, or album (e.g. Daft Punk, Queen Bohemian Rhapsody, The Weeknd)..." autocomplete="off" />
+            <button class="btn-clear" id="btnClearSearch" title="Clear">✕</button>
+            <button class="btn btn-primary" id="btnSearch">Search Studio Catalog</button>
+          </div>
+
+          <div class="search-sub-bar">
+            <div class="search-status" id="searchStatus">Ready. Search millions of lossless releases worldwide.</div>
+            <div class="search-actions" style="display:flex;align-items:center;gap:12px;">
+              <div class="quality-quick-pill" title="Active Audio Download Format & Bit-Depth">
+                <span class="pill-label">Format:</span>
+                <select id="quickQualitySelect" class="quick-quality-select">
+                  <option value="flac_24bit">👑 24-bit Hi-Res FLAC</option>
+                  <option value="flac_16bit">🎧 16-bit Lossless FLAC</option>
+                  <option value="hifi_first">🌟 Hi-Fi Lossless First</option>
+                  <option value="native_clean">⚡ Native Clean M4A</option>
+                </select>
+              </div>
+              <label class="checkbox-container" style="font-size:12px;margin:0;cursor:pointer;" title="Penalizes and filters remixes, cover versions, live recordings, and edits unless explicitly searched.">
+                <input type="checkbox" id="chkFilterUnwanted" checked />
+                <span class="checkmark"></span>
+                <span class="label-text" style="color:var(--text-muted);font-weight:500;">Originals Only (Hide Remixes/Covers)</span>
+              </label>
+              <button class="btn btn-emerald btn-sm" id="btnDownloadAll" style="display:none;">
+                ⬇ Download All
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search Results Grid -->
+        <div class="results-container" id="resultsContainer">
+          <div class="empty-state">
+            <div class="empty-icon">🎧</div>
+            <h3>Discover Studio Quality Music</h3>
+            <p>Type a song, artist, or album title above to audition 30-sec previews and download complete lossless FLAC tracks with uncompressed studio tags and high-res cover art.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: DIRECT URLS & WEB -->
+      <section class="tab-pane" id="tab-urls">
+        
+        <!-- Streaming Playlist Import Card -->
+        <div class="panel-card" style="margin-bottom: 20px;">
+          <div class="panel-header">
+            <div>
+              <h2>Import Streaming Playlists</h2>
+              <p class="text-muted">Import entire playlists from Spotify, Apple Music, and Deezer. Automatically extracts track titles, artists, albums, durations, and official ISRCs.</p>
+              <div class="playlist-badges-row">
+                <span class="badge-tag badge-spotify">● Spotify</span>
+                <span class="badge-tag badge-apple">● Apple Music</span>
+                <span class="badge-tag badge-deezer">● Deezer</span>
+                <span class="badge-tag badge-flac">⚡ Automatic FLAC Queue</span>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btnPastePlaylistClipboard">📋 Paste Link</button>
+          </div>
+
+          <div class="search-input-wrapper" style="margin-top: 12px;">
+            <span class="search-icon">🎧</span>
+            <input type="text" id="playlistUrlInput" placeholder="Paste Spotify, Apple Music, or Deezer playlist URL (e.g. https://open.spotify.com/playlist/...)..." autocomplete="off" />
+            <button class="btn-clear" id="btnClearPlaylistInput" title="Clear">✕</button>
+            <button class="btn btn-primary" id="btnResolvePlaylist">🔍 Preview Playlist</button>
+          </div>
+
+          <!-- Dynamic Playlist Preview Box (Hidden initially) -->
+          <div id="playlistPreviewContainer" style="display: none;">
+            <div class="playlist-preview-box">
+              <div class="playlist-preview-header">
+                <img id="playlistCoverImg" class="playlist-cover-art" src="" alt="Playlist Cover" />
+                <div class="playlist-header-details">
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <h3 id="playlistTitleText">Playlist Name</h3>
+                    <button class="btn-clear" id="btnDismissPlaylistPreview" title="Close Preview">✕</button>
+                  </div>
+                  <div class="playlist-header-meta">
+                    <span id="playlistPlatformBadge" class="badge-tag">Platform</span>
+                    <span id="playlistCreatorText" class="badge-tag">By Creator</span>
+                    <span id="playlistTrackCountBadge" class="badge-tag badge-flac">0 Tracks</span>
+                  </div>
+                  <p id="playlistDescriptionText" class="text-muted" style="font-size: 12px; margin-top: 2px;"></p>
+                </div>
+              </div>
+
+              <!-- Compact Track Preview List -->
+              <div class="playlist-tracks-scroll" id="playlistTracksList">
+                <!-- Dynamically populated -->
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border-subtle);">
+                <span style="font-size: 12px; color: var(--text-muted);" id="playlistStatusNote">Ready to queue tracks for high-fidelity conversion.</span>
+                <button class="btn btn-emerald" id="btnQueuePlaylistTracks">⬇ Download Entire Playlist</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Direct URLs & Batch Stream Grabber Card -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2>Direct URL & Batch Stream Grabber</h2>
+              <p class="text-muted">Paste links from YouTube, YouTube Music, SoundCloud, Bandcamp, Audiomack, or direct audio web streams. The app extracts clean audio and automatically matches official studio album art.</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btnPasteClipboard">📋 Paste from Clipboard</button>
+          </div>
+
+          <div class="url-input-container">
+            <textarea id="urlsTextarea" placeholder="# Paste one or more URLs below (one per line):
+https://open.spotify.com/playlist/...
+https://music.apple.com/us/playlist/...
+https://www.deezer.com/playlist/...
+https://www.youtube.com/watch?v=...
+https://soundcloud.com/...
+https://artist.bandcamp.com/track/..."></textarea>
+          </div>
+
+          <div class="url-format-bar">
+            <span class="badge-tag" style="font-size:11px;padding:4px 8px;" id="urlOutputFormatBadge">⚡ Format: Follows Settings Preset</span>
+            <span style="font-size:12px;color:var(--text-muted);">Extracts highest quality audio stream from URL, embeds official album artwork and studio metadata.</span>
+          </div>
+
+          <div class="url-controls">
+            <label class="checkbox-container">
+              <input type="checkbox" id="chkAutoEnrich" checked />
+              <span class="checkmark"></span>
+              <span class="label-text">Auto-match studio metadata & HD album art from official catalog</span>
+            </label>
+
+            <div class="url-btn-group">
+              <button class="btn btn-ghost" id="btnClearUrls">Clear</button>
+              <button class="btn btn-emerald" id="btnQueueUrls">⬇ Download</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: DOWNLOAD QUEUE -->
+      <section class="tab-pane" id="tab-queue">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2>Download & Encoding Queue</h2>
+              <p class="text-muted" id="queueSummaryText">0 active • 0 queued • 0 completed</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btnClearFinished">Clear Finished</button>
+          </div>
+
+          <div class="queue-list" id="queueList">
+            <div class="empty-state">
+              <div class="empty-icon">⏳</div>
+              <h3>No Active Downloads</h3>
+              <p>Search for songs or paste URLs to queue up audio downloads.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: LIBRARY -->
+      <section class="tab-pane" id="tab-library">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2>Downloaded Music Library</h2>
+              <p class="text-muted" id="librarySummaryText">Scanning storage drive...</p>
+            </div>
+            <div class="panel-actions">
+              <button class="btn btn-secondary btn-sm" id="btnOpenFolder">📂 Open Music Folder</button>
+              <button class="btn btn-primary btn-sm" id="btnRefreshLibrary">🔄 Refresh Library</button>
+            </div>
+          </div>
+
+          <!-- Format Filter Pills & Search -->
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
+            <div class="library-filter-pills" id="libraryFilterPills">
+              <button class="btn active" data-fmt="all" id="btnFilterAll">All Tracks (<span id="countAll">0</span>)</button>
+              <button class="btn" data-fmt="flac" id="btnFilterFlac">👑 Lossless FLAC (<span id="countFlac">0</span>)</button>
+              <button class="btn" data-fmt="m4a" id="btnFilterM4a">⚡ Native M4A (<span id="countM4a">0</span>)</button>
+            </div>
+            <div class="filter-bar" style="margin-bottom:0;flex:1;max-width:380px;">
+              <input type="text" id="libraryFilterInput" placeholder="Filter library by title, artist, or album..." />
+            </div>
+          </div>
+
+          <div class="library-list" id="libraryList">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: STORAGE & SETTINGS -->
+      <section class="tab-pane" id="tab-settings">
+        <div class="panel-card">
+          <h2>Storage Drive & Audio Preferences</h2>
+          <p class="text-muted">Configure destination drive, folder hierarchy, metadata, and audiophile compression settings.</p>
+
+          <!-- Setting 1: Storage Path -->
+          <div class="setting-group">
+            <label class="setting-title">Target Storage Drive & Folder</label>
+            <div class="input-with-button">
+              <input type="text" id="settingDownloadDir" readonly />
+              <button class="btn btn-primary" id="btnSettingsBrowse">📁 Browse Drive...</button>
+            </div>
+
+            <!-- Drive Usage Meter -->
+            <div class="storage-meter-card" id="storageMeterCard">
+              <div class="meter-header">
+                <span class="meter-title" id="meterDriveTitle">Drive E:</span>
+                <span class="meter-values" id="meterDriveValues">-- GB Free / -- GB Total</span>
+              </div>
+              <div class="progress-bar-track">
+                <div class="progress-bar-fill" id="meterFill" style="width: 0%;"></div>
+              </div>
+              <div class="meter-footer" id="meterFooterPath">Path: ...</div>
+            </div>
+          </div>
+
+          <!-- Setting 2: Quality & Codec Preset -->
+          <div class="setting-group">
+            <label class="setting-title">Audio Format & Quality Preset</label>
+            <select id="settingQualityPreset" class="select-control">
+              <option value="flac_24bit">👑 24-bit Hi-Res Studio Master FLAC (24-bit / 48 kHz - Pure Studio Master)</option>
+              <option value="flac_16bit">🎧 16-bit Lossless CD FLAC (16-bit / 44.1 kHz - Red Book Standard)</option>
+              <option value="hifi_first">🌟 Hi-Fi Lossless First (Queries Lossless Archives, Auto 24/16-bit FLAC)</option>
+              <option value="native_clean">⚡ Native Clean M4A (Lightweight ~4 MB AAC Stream)</option>
+            </select>
+            <div style="margin-top: 6px; font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">
+              <span style="color:#facc15;font-weight:600;">👑 24-bit Hi-Res Master:</span> Encodes into pristine 24-bit / 48 kHz FLAC studio container with Level 8 lossless compression. 100% compatible with high-end DACs, Walkmans, Foobar2000 &amp; Roon.<br>
+              <span style="color:var(--accent-cyan);font-weight:600;">🎧 16-bit Lossless CD:</span> Bit-perfect 16-bit / 44.1 kHz Red Book CD audio format.<br>
+              <span style="color:var(--accent-green);font-weight:600;">🌟 Hi-Fi Lossless First:</span> Automatically queries native lossless archives (Bandcamp, Archive.org, community mirrors) and saves in FLAC.
+            </div>
+          </div>
+
+          <!-- Setting 3: Folder Template -->
+          <div class="setting-group">
+            <label class="setting-title">Folder Organization Hierarchy</label>
+            <select id="settingFolderTemplate" class="select-control">
+              <option value="audiophile">Audiophile: {Artist} / {Album} ({Year}) / {Track} - {Title}</option>
+              <option value="artist_album">Standard: {Artist} / {Album} / {Track} - {Title}</option>
+              <option value="artist_track">By Artist: {Artist} / {Track} - {Title}</option>
+              <option value="flat">Flat: {Artist} - {Title}</option>
+            </select>
+          </div>
+
+          <!-- Setting 4: Artwork & Metadata -->
+          <div class="setting-group">
+            <label class="setting-title">Album Artwork Quality</label>
+            <select id="settingArtworkRes" class="select-control">
+              <option value="1400x1400">1400x1400 Studio HD (Balanced size & crispness)</option>
+              <option value="3000x3000">3000x3000 Ultra Hi-Res Master (Maximum uncompressed fidelity)</option>
+              <option value="1000x1000">1000x1000 Standard HD</option>
+            </select>
+          </div>
+
+          <div class="setting-group toggles-grid">
+            <label class="checkbox-container">
+              <input type="checkbox" id="settingEmbedArt" checked />
+              <span class="checkmark"></span>
+              <span class="label-text">Embed HD Cover Art directly in Audio File (M4A / FLAC / MP3)</span>
+            </label>
+
+            <label class="checkbox-container">
+              <input type="checkbox" id="settingExternalCover" checked />
+              <span class="checkmark"></span>
+              <span class="label-text">Save external 'cover.jpg' in album directory (For car stereos, Plex & Foobar2000)</span>
+            </label>
+          </div>
+
+          <!-- Setting 4: Compression Level -->
+          <div class="setting-group">
+            <div class="slider-header">
+              <label class="setting-title">FLAC Lossless Compression Level</label>
+              <span class="slider-badge" id="compressionBadge">Level 8 (Max Lossless Compression)</span>
+            </div>
+            <input type="range" id="settingCompression" min="0" max="8" value="8" class="range-slider" />
+          </div>
+
+          <div class="setting-actions">
+            <button class="btn btn-emerald" id="btnSaveSettings">💾 Save & Apply Settings</button>
+            <span class="save-toast" id="saveToast" style="display:none;">✓ Settings Saved!</span>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Audio Player Dock -->
+    <footer class="player-dock">
+      <div class="player-track-info">
+        <div class="player-art" id="playerArt">
+          <div class="player-art-placeholder">🎵</div>
+        </div>
+        <div class="player-meta">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="player-title" id="playerTitle">Ready to Audition</div>
+            <span class="badge-tag" id="playerQualityBadge" style="display:none;font-size:10px;"></span>
+          </div>
+          <div class="player-subtitle" id="playerSubtitle">Click ▶ Preview on any track or ▶ Play in your library</div>
+        </div>
+      </div>
+
+      <div class="player-center-controls">
+        <div class="waveform-visualizer" id="waveformVisualizer">
+          <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+          <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        </div>
+
+        <button class="player-btn" id="btnPlayerToggle" title="Play / Pause">▶</button>
+        <button class="player-btn player-btn-sm" id="btnPlayerStop" title="Stop">⏹</button>
+      </div>
+
+      <div class="player-volume-controls">
+        <span class="vol-icon" id="volIcon">🔊</span>
+        <input type="range" id="volSlider" min="0" max="100" value="85" class="vol-slider" />
+      </div>
+    </footer>
+
+    <!-- Spectrogram & Acoustic Analysis Modal -->
+    <div class="modal-overlay" id="spectrogramModal" style="display:none;">
+      <div class="modal-content spectrogram-modal-card">
+        <div class="modal-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:20px;">📊</span>
+            <div>
+              <h3 id="spectrogramModalTitle" style="margin:0;font-size:16px;">Acoustic Spectrum & Fidelity Analysis</h3>
+              <p id="spectrogramModalSubtitle" class="text-muted" style="margin:2px 0 0;font-size:12px;">Inspecting audio frequency cutoff and ultrasonic harmonics</p>
+            </div>
+          </div>
+          <button class="btn-clear" id="btnCloseSpectrogramModal" title="Close" style="font-size:18px;">✕</button>
+        </div>
+
+        <div class="spectrogram-body" style="padding:16px;text-align:center;">
+          <div id="spectrogramLoading" style="padding:40px 20px;color:var(--accent-cyan);">
+            <div style="font-size:24px;animation:spin 1s infinite linear;display:inline-block;">💿</div>
+            <p style="margin-top:10px;font-size:13px;">Computing high-resolution audio spectrogram via FFmpeg...</p>
+          </div>
+          <div id="spectrogramImgWrapper" style="display:none;">
+            <img id="spectrogramImg" src="" alt="Frequency Spectrogram" style="width:100%;max-height:420px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);object-fit:contain;background:#000;" />
+            <div class="spectrogram-guide" style="margin-top:14px;padding:12px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;text-align:left;font-size:12px;line-height:1.5;">
+              <div style="font-weight:700;margin-bottom:6px;color:#fff;">🔬 How to verify True Hi-Res from the Spectrogram:</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div>
+                  <span style="color:#facc15;font-weight:600;">👑 True Hi-Res Master (24-bit / 48-96+ kHz):</span><br>
+                  Acoustic energy and harmonics extend continuously above <strong>20 kHz</strong> and up to <strong>24 kHz+</strong> with no artificial brick-wall cutoff.
+                </div>
+                <div>
+                  <span style="color:var(--accent-cyan);font-weight:600;">🎧 CD Lossless (16-bit / 44.1 kHz):</span><br>
+                  Natural frequency response up to the Red Book CD ceiling at <strong>22.05 kHz</strong>.
+                </div>
+              </div>
+              <div style="margin-top:8px;color:var(--text-muted);font-size:11px;">
+                <span style="color:var(--accent-emerald);font-weight:600;">⚡ Upsampled / Lossy Source Detection:</span> If the graph shows a hard horizontal shelf/cutoff abruptly cut off at 16 kHz or 19 kHz with blank black space above it, the audio originated from a lossy compressed source prior to FLAC encoding.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

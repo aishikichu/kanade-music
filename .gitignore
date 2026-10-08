@@ -1,0 +1,60 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / PyInstaller packaging & builds
+build/
+dist/
+*.spec.bak
+AuraLossless.spec
+*.egg-info/
+*.egg
+
+# Binaries & Executables
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+
+# Virtual Environments
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Runtime Logs, Temp, and Cache
+*.log
+app_log.txt
+*.tmp
+*.bak
+*.swp
+*~
+
+# User Local Config & Storage Settings (keep repo clean)
+settings.json
+
+# Local Music Downloads & Artifacts
+downloads/
+Music/
+POCO
+
+# Personal Phone Sync Scripts
+Connect-Phone-Linux.bat
+Open-Cloud-Server.bat
+Open-Linux-Desktop.bat
+Phone-Cloud-Server.url
+Phone-Linux-Desktop.url
+Sync-To-Phone.bat
+Sync-To-Phone.ps1
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.directory
